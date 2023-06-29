@@ -1,0 +1,49 @@
+name: ${project.name}
+version: ${project.version}
+main: com.i0dev.grindtools.GrindToolsPlugin
+website: ${project.url}
+authors: [ i01 ]
+depend: [ MassiveCore , ShopGUIPlus ]
+description: ${project.description}
+api-version: 1.15
+permissions:
+  grindtools.basecommand: { description: grindtools basecommand, default: false }
+  grindtools.fishing.region.create: { description: create fishing region, default: false }
+  grindtools.fishing.region.remove: { description: delete fishing region, default: false }
+  grindtools.fishing.region.list: { description: list fishing region, default: false }
+  grindtools.fishing.region.teleport: { description: teleport to fishing region, default: false }
+  grindtools.give: { description: give item, default: false }
+  grindtools.give.tool: { description: give tool, default: false }
+  grindtools.give.techchip: { description: give upgrade, default: false }
+  grindtools.give.upgrade: { description: give upgrade, default: false }
+  grindtools.give.upgrade.any: { description: give upgrade, default: false }
+  grindtools.give.upgrade.next: { description: give upgrade, default: false }
+  grindtools.upgrade: { description: upgrade item, default: false }
+  grindtools.version: { description: check version, default: false }
+  grindtools.*:
+    grindtools.basecommand: true
+    grindtools.fishing.region.create: true
+    grindtools.fishing.region.remove: true
+    grindtools.fishing.region.list: true
+    grindtools.fishing.region.teleport: true
+    grindtools.give: true
+    grindtools.give.tool: true
+    grindtools.give.techchip: true
+    grindtools.give.upgrade: true
+    grindtools.give.upgrade.any: true
+    grindtools.give.upgrade.next: true
+    grindtools.upgrade: true
+    grindtools.version: true
+  grindtools.kit.op:
+    default: op
+    children:
+      grindtools.*: true
+  grindtools.kit.rank0:
+    default: false
+    children:
+      grindtools.basecommand: true
+      grindtools.upgrade: true
+  grindtools.kit.default:
+    default: true
+    children:
+      grindtools.kit.rank0: true
