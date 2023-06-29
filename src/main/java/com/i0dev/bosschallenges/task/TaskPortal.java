@@ -1,5 +1,6 @@
 package com.i0dev.bosschallenges.task;
 
+import com.i0dev.bosschallenges.BossChallengesPlugin;
 import com.i0dev.bosschallenges.entity.ActivePortal;
 import com.i0dev.bosschallenges.entity.ActivePortalColl;
 import com.i0dev.bosschallenges.util.Utils;

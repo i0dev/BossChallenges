@@ -4,10 +4,8 @@ import com.i0dev.bosschallenges.Integration.PlaceholderAPI;
 import com.i0dev.bosschallenges.entity.*;
 import com.massivecraft.massivecore.MassivePlugin;
 import com.massivecraft.massivecore.collections.MassiveList;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import me.filoghost.holographicdisplays.api.HolographicDisplaysAPI;
 import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.List;
@@ -35,7 +33,8 @@ public class BossChallengesPlugin extends MassivePlugin {
         return new MassiveList<>(
                 MConfColl.class,
                 MLangColl.class,
-
+                ChallengeItemConfColl.class,
+                TimeDecreaseConfColl.class,
                 MDataColl.class,
                 ActivePortalColl.class,
                 SessionColl.class
@@ -52,14 +51,12 @@ public class BossChallengesPlugin extends MassivePlugin {
         }
         File schematicsDirectory = new File(getDataFolder() + "/schematics");
         if (!schematicsDirectory.exists()) schematicsDirectory.mkdirs();
-    }
-
-    public WorldEditPlugin getWorldEdit() {
-        Plugin p = Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-        return p instanceof WorldEditPlugin ? (WorldEditPlugin) p : null;
+        ChallengeItemConf.example();
+        TimeDecreaseConf.example();
     }
 
     public HolographicDisplaysAPI getHolographicDisplays() {
         return HolographicDisplaysAPI.get(this);
     }
+
 }

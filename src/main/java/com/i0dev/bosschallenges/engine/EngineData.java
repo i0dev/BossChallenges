@@ -17,8 +17,6 @@ public class EngineData extends Engine {
 
     /**
      * If there are any players that need to be teleported to spawn on login, do it.
-     *
-     * @param e The event
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent e) {

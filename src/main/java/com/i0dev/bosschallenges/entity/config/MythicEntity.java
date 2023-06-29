@@ -9,6 +9,6 @@ public class MythicEntity {
     String mythicMobName;
     int amount;
     long delaySeconds;
-    ConfigLocationOffset locationOffset;
+    ConfigLocation locationOffset;
 
 }

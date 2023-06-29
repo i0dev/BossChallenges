@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class ConfigLocationOffset {
+public class ConfigLocation {
 
     int x, y, z;
 

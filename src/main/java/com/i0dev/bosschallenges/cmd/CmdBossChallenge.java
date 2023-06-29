@@ -17,6 +17,8 @@ public class CmdBossChallenge extends BossChallengeCommand {
     }
 
     public CmdBossChallengeGive cmdFactionsGive = new CmdBossChallengeGive();
+    public CmdBossChallengeToggle cmdBossChallengeToggle = new CmdBossChallengeToggle();
+    public CmdBossChallengeStop cmdBossChallengeStop = new CmdBossChallengeStop();
     public MassiveCommandVersion cmdFactionsVersion = new MassiveCommandVersion(BossChallengesPlugin.get()).setAliases("v", "version").addRequirements(RequirementHasPerm.get(Perm.VERSION));
 
     @Override

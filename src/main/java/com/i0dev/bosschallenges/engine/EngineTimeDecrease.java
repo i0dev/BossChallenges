@@ -3,6 +3,7 @@ package com.i0dev.bosschallenges.engine;
 import com.i0dev.bosschallenges.Perm;
 import com.i0dev.bosschallenges.entity.ActivePortal;
 import com.i0dev.bosschallenges.entity.MConf;
+import com.i0dev.bosschallenges.entity.TimeDecreaseConf;
 import com.i0dev.bosschallenges.util.ItemBuilder;
 import com.i0dev.bosschallenges.util.Utils;
 import com.massivecraft.massivecore.Engine;
@@ -20,16 +21,16 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 
-public class EnginePortal extends Engine {
+public class EngineTimeDecrease extends Engine {
 
-    private static final EnginePortal i = new EnginePortal();
+    private static final EngineTimeDecrease i = new EngineTimeDecrease();
 
-    public static EnginePortal get() {
+    public static EngineTimeDecrease get() {
         return i;
     }
 
     /**
-     * Handles when a player places a boss portal
+     *
      */
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onPlayerInteract(PlayerInteractEvent e) {
@@ -43,50 +44,28 @@ public class EnginePortal extends Engine {
         if (!action.equals(Action.RIGHT_CLICK_BLOCK)) return;
         if (itemInHand == null) return;
 
-        String challengeId = ItemBuilder.getPDCValue(itemInHand, "challenge-id");
-        if (challengeId == null) return;
+        String decreaseID = ItemBuilder.getPDCValue(itemInHand, "decrease-id");
+        if (decreaseID == null) return;
 
         e.setCancelled(true);
 
-        if (!blockFace.equals(BlockFace.UP)) {
-            e.getPlayer().sendMessage("You can only place portals on the top of a block!");
-            return;
-        }
-
-        if (!mConf.isPlacingNewPortalsEnabled()) {
-            e.getPlayer().sendMessage("Portal placement is disabled!");
-            return;
-        }
         Location location = block.getLocation();
         World world = location.getWorld();
         if (world == null) return;
-        if (!mConf.getAllowedPortalPlacementWorlds().contains(location.getWorld().getName())) {
-            e.getPlayer().sendMessage("You cannot place a portal in this world!");
-            return;
-        }
-        if (ActivePortal.getActivePortalByLocation(location) != null) {
-            e.getPlayer().sendMessage("There is already a portal at this location!");
-            return;
-        }
-        if (!Perm.PLACE_PORTAL.has(e.getPlayer(), true)) return;
 
-        if (!location.clone().add(0, 1, 0).getBlock().getType().equals(Material.AIR) || !location.clone().add(0, 2, 0).getBlock().getType().equals(Material.AIR)) {
-            e.getPlayer().sendMessage("Please ensure there is 2 air blocks above the block you clicked!");
+        ActivePortal activePortal = ActivePortal.getActivePortalByLocation(location);
+        TimeDecreaseConf tdc = TimeDecreaseConf.get(decreaseID);
+        if (tdc == null) return;
+
+        if (activePortal == null) {
+            e.getPlayer().sendMessage("Click this item on a boss portal to decrease the time!");
             return;
         }
+        if (!Perm.USE_TIME_DECREASE.has(e.getPlayer(), true)) return;
 
-        if (!block.getType().isSolid()) {
-            e.getPlayer().sendMessage("Please ensure the block you clicked is solid!");
-            return;
-        }
+        activePortal.decreaseTime(tdc.getDuration());
 
-        if (MConf.get().blacklistedBlocksToOpenPortalAt.contains(block.getType())) {
-            e.getPlayer().sendMessage("You cannot place a portal on this block!");
-            return;
-        }
-
-        ActivePortal.createNewActivePortal(location, e.getPlayer(), challengeId);
-        e.getPlayer().sendMessage("You have placed a portal!");
+        e.getPlayer().sendMessage("You have decreased the time by " + tdc.getDuration() + " seconds!");
         itemInHand.setAmount(itemInHand.getAmount() - 1);
         e.getPlayer().updateInventory();
     }

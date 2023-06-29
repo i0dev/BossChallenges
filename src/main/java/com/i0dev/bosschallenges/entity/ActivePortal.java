@@ -1,19 +1,17 @@
 package com.i0dev.bosschallenges.entity;
 
 import com.i0dev.bosschallenges.BossChallengesPlugin;
-import com.i0dev.bosschallenges.entity.config.ChallengeItem;
 import com.i0dev.bosschallenges.util.Cuboid;
 import com.i0dev.bosschallenges.util.Utils;
 import com.massivecraft.massivecore.ps.PS;
 import com.massivecraft.massivecore.store.Entity;
-import io.lumine.mythic.bukkit.utils.holograms.individual.HologramLine;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import me.filoghost.holographicdisplays.api.hologram.Hologram;
 import me.filoghost.holographicdisplays.api.hologram.PlaceholderSetting;
-import me.filoghost.holographicdisplays.api.hologram.line.TextHologramLine;
 import org.bukkit.*;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +31,7 @@ public class ActivePortal extends Entity<ActivePortal> {
     @Setter
     public PS poralBlockPS;
     @Setter
-    public Material originalBlockMaterial; // TODO: change this to sending block packets for the portal to players instead of changing the block
+    public String originalBlockDataString;
     @Setter
     public String challengeItemId;
     @Setter
@@ -46,7 +44,9 @@ public class ActivePortal extends Entity<ActivePortal> {
     public transient Location portalBlockLocation;
     public transient Hologram hologram;
     public transient Cuboid teleportRegion;
-    public transient ChallengeItem challengeItem;
+    public transient ChallengeItemConf challengeItem;
+    public transient BlockData originalBlockData;
+
     @Setter
     public transient Session session;
 
@@ -56,9 +56,10 @@ public class ActivePortal extends Entity<ActivePortal> {
         this.uuid = that.uuid;
         this.duration = that.duration;
         this.poralBlockPS = that.poralBlockPS;
-        this.originalBlockMaterial = that.originalBlockMaterial;
+        this.originalBlockDataString = that.originalBlockDataString;
         this.challengeItemId = that.challengeItemId;
         this.ownerUUID = that.ownerUUID;
+        this.sessionUUID = that.sessionUUID;
         return this;
     }
 
@@ -66,9 +67,10 @@ public class ActivePortal extends Entity<ActivePortal> {
      * Initialize the portal, this will create the hologram
      */
     public void initialize() {
-        this.challengeItem = ChallengeItem.getChallengeItemById(challengeItemId);
+        this.challengeItem = ChallengeItemConf.get(challengeItemId);
         this.duration = this.duration == -100 ? challengeItem.getDuration() : this.duration;
-        this.session = Session.get(sessionUUID);
+        this.session = Session.get(sessionUUID.toString());
+        this.originalBlockData = Bukkit.createBlockData(originalBlockDataString);
         this.portalBlockLocation = poralBlockPS.asBukkitLocation();
         this.hologram = BossChallengesPlugin.get().getHolographicDisplays().createHologram(portalBlockLocation.clone().add(0.5, 3.5, 0.5));
         this.hologram.setPlaceholderSetting(PlaceholderSetting.ENABLE_ALL);
@@ -95,30 +97,46 @@ public class ActivePortal extends Entity<ActivePortal> {
 
         activePortal.setUuid(portalUUID);
         activePortal.setPoralBlockPS(PS.valueOf(location));
-        activePortal.setOriginalBlockMaterial(location.getBlock().getType());
+        activePortal.setOriginalBlockDataString(location.getBlock().getBlockData().getAsString());
         activePortal.setChallengeItemId(challengeItemId);
         activePortal.setOwnerUUID(owner.getUniqueId());
         activePortal.setSessionUUID(sessionUUID);
 
         activePortal.initialize();
+        activePortal.changed();
 
         Utils.runCommands(activePortal.getChallengeItem().getCommandsToRunOnPortalPlace(), owner);
 
-        location.getBlock().setType(MConf.get().getPortalBlockMaterial());
+        location.getBlock().setBlockData(MConf.get().getPortalBlockMaterial().createBlockData());
         location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 0.5f, 1);
         location.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, location, 1);
         location.getWorld().playSound(location, Sound.BLOCK_PORTAL_AMBIENT, SoundCategory.AMBIENT, 1f, 1);
 
-
         Session.createNewSession(activePortal);
     }
 
+    public void decreaseTime(long amount) {
+        long newTime = this.duration - amount;
+        if (newTime <= 0) {
+            this.closePortal();
+            return;
+        }
+
+        this.duration -= amount;
+        this.changed();
+    }
+
     public void closePortal() {
-        this.hologram.delete();
-        this.portalBlockLocation.getBlock().setType(this.originalBlockMaterial);
-        this.portalBlockLocation.getWorld().playSound(this.portalBlockLocation, Sound.BLOCK_GLASS_BREAK, 0.5F, 1.0F);
         Utils.runCommands(this.challengeItem.getCommandsToRunOnPortalBreak(), null);
-        session.start();
+        if (this.session != null) session.start();
+
+        delete();
+    }
+
+    public void delete() {
+        this.hologram.delete();
+        this.portalBlockLocation.getWorld().playSound(this.portalBlockLocation, Sound.BLOCK_GLASS_BREAK, 0.5F, 1.0F);
+        this.portalBlockLocation.getBlock().setBlockData(this.originalBlockData);
         this.detach();
     }
 

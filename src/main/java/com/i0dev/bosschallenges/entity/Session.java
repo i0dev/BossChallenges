@@ -1,7 +1,7 @@
 package com.i0dev.bosschallenges.entity;
 
 import com.i0dev.bosschallenges.Integration.WorldEditIntegration;
-import com.i0dev.bosschallenges.entity.config.ChallengeItem;
+import com.i0dev.bosschallenges.entity.config.ConfigLocation;
 import com.i0dev.bosschallenges.entity.config.MythicEntity;
 import com.i0dev.bosschallenges.util.Utils;
 import com.massivecraft.massivecore.ps.PS;
@@ -41,9 +41,15 @@ public class Session extends Entity<Session> {
     public Set<UUID> mobs = new HashSet<>();
     public long startTime;
 
+    @Setter
+    public Set<Integer> toTitleAnnounce = new HashSet<>();
+    @Setter
+    public Set<Integer> toChatAnnounce = new HashSet<>();
+
     public transient Location spawnLocation;
+    @Setter
     public transient ActivePortal portal;
-    public transient ChallengeItem challengeItem;
+    public transient ChallengeItemConf challengeItem;
 
     @Override
     public Session load(@NotNull Session that) {
@@ -56,13 +62,15 @@ public class Session extends Entity<Session> {
         this.startTime = that.startTime;
         this.challengeItemId = that.challengeItemId;
         this.toSpawn = that.toSpawn;
+        this.toTitleAnnounce = that.toTitleAnnounce;
+        this.toChatAnnounce = that.toChatAnnounce;
         return this;
     }
 
     public void initialize() {
         this.spawnLocation = spawnPS.asBukkitLocation();
-        this.portal = ActivePortal.get(portalUUID);
-        this.challengeItem = ChallengeItem.getChallengeItemById(challengeItemId);
+        this.portal = ActivePortal.get(portalUUID.toString());
+        this.challengeItem = ChallengeItemConf.get(challengeItemId);
     }
 
     /**
@@ -114,26 +122,46 @@ public class Session extends Entity<Session> {
         session.setPortalUUID(portal.getUuid());
         session.setSpawnPS(PS.valueOf(getNewSchemLocation(new Location(Bukkit.getWorld(MConf.get().getSessionWorldName()), 0, 0, 0))));
         session.setChallengeItemId(portal.getChallengeItemId());
-        session.setToSpawn(new ArrayList<>(ChallengeItem.getChallengeItemById(portal.getChallengeItemId()).getMythicEntities()));
+        session.setToSpawn(new ArrayList<>(ChallengeItemConf.get(portal.getChallengeItemId()).getMythicEntities()));
+        session.setToChatAnnounce(new HashSet<>(MConf.get().getChatAnnouncementTimeForAllPlayersInArena()));
+        session.setToTitleAnnounce(new HashSet<>(MConf.get().getTitleAnnouncementTimeForPlayersInArena()));
 
         session.initialize();
+        session.changed();
 
         portal.setSession(session);
 
         WorldEditIntegration.pasteSchematicAtLocation(session.getSpawnLocation(), portal.getChallengeItem().getSchematicName());
     }
 
+    public List<Player> getPlayersInArena() {
+        ConfigLocation loc = challengeItem.getRadiusToCheckForPlayersInArena();
+        return new ArrayList<>(spawnLocation.getWorld().getNearbyEntities(spawnLocation, loc.getX(), loc.getY(), loc.getZ(), entity -> entity instanceof Player).stream().map(entity -> (Player) entity).toList());
+    }
+
+    /**
+     * Starts the session
+     */
     public void start() {
-        players.addAll(spawnLocation.getWorld().getNearbyEntities(spawnLocation, 100, 100, 100, entity -> entity instanceof Player).stream().map(entity -> ((Player) entity).getUniqueId()).toList());
+        players.addAll(getPlayersInArena().stream().map(Player::getUniqueId).toList());
 
         if (players.isEmpty()) {
             stop();
         }
 
+        getPlayersInArena().forEach(player -> player.sendTitle(
+                Utils.color(MConf.get().getTitleAnnouncementMessageForPlayersInArena()
+                        .replace("%challengeName%", challengeItem.getDisplayName())),
+                Utils.color(MConf.get().getSubTitleAnnouncementStart()),
+                10, 40, 10));
+
         this.startTime = System.currentTimeMillis();
         this.changed();
     }
 
+    /**
+     * Stops the session
+     */
     public void stop() {
         players.forEach(playerUUID -> {
             Player player = Bukkit.getPlayer(playerUUID);
@@ -197,6 +225,4 @@ public class Session extends Entity<Session> {
             return getNewSchemLocation(location.add(SESSION_X_AXIS_OFFSET, 0, SESSION_Z_AXIS_OFFSET));
         return location;
     }
-
-
 }

@@ -9,7 +9,16 @@ public enum Perm implements Identified {
     BASECOMMAND,
 
     GIVE,
+    GIVE_CHALLENGE,
+    GIVE_DECREASE,
+
     PLACE_PORTAL,
+    USE_TIME_DECREASE,
+    TOGGLE,
+
+    STOP,
+    STOP_SESSION,
+    STOP_PORTAL,
 
     VERSION;
 
