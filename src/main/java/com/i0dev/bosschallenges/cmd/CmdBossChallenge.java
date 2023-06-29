@@ -8,14 +8,15 @@ import com.massivecraft.massivecore.command.requirement.RequirementHasPerm;
 
 import java.util.List;
 
-public class CmdBossChallenges extends BossChallengesCommand {
+public class CmdBossChallenge extends BossChallengeCommand {
 
-    private static CmdBossChallenges i = new CmdBossChallenges();
+    private static CmdBossChallenge i = new CmdBossChallenge();
 
-    public static CmdBossChallenges get() {
+    public static CmdBossChallenge get() {
         return i;
     }
 
+    public CmdBossChallengeGive cmdFactionsGive = new CmdBossChallengeGive();
     public MassiveCommandVersion cmdFactionsVersion = new MassiveCommandVersion(BossChallengesPlugin.get()).setAliases("v", "version").addRequirements(RequirementHasPerm.get(Perm.VERSION));
 
     @Override

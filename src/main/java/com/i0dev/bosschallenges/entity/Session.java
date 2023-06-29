@@ -1,128 +1,202 @@
 package com.i0dev.bosschallenges.entity;
 
-import com.i0dev.bosschallenges.BossChallengesPlugin;
+import com.i0dev.bosschallenges.Integration.WorldEditIntegration;
 import com.i0dev.bosschallenges.entity.config.ChallengeItem;
-import com.i0dev.bosschallenges.util.Cuboid;
+import com.i0dev.bosschallenges.entity.config.MythicEntity;
 import com.i0dev.bosschallenges.util.Utils;
 import com.massivecraft.massivecore.ps.PS;
 import com.massivecraft.massivecore.store.Entity;
-import io.lumine.mythic.bukkit.utils.holograms.individual.HologramLine;
 import lombok.Getter;
 import lombok.Setter;
-import me.filoghost.holographicdisplays.api.hologram.Hologram;
-import me.filoghost.holographicdisplays.api.hologram.PlaceholderSetting;
-import me.filoghost.holographicdisplays.api.hologram.line.TextHologramLine;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.UUID;
+import java.util.*;
 
 @Getter
-public class ActivePortal extends Entity<ActivePortal> {
+public class Session extends Entity<Session> {
 
-    public static ActivePortal get(Object oid) {
-        return ActivePortalColl.get().get(oid);
+    public transient static final int SESSION_X_AXIS_OFFSET = 2048;
+    public transient static final int SESSION_Z_AXIS_OFFSET = 2048;
+
+    public static Session get(Object oid) {
+        return SessionColl.get().get(oid);
     }
 
     @Setter
     public UUID uuid;
     @Setter
-    public PS poralBlockPS;
+    public UUID portalUUID;
     @Setter
-    public Material originalBlockMaterial; // TODO: change this to sending block packets for the portal to players instead of changing the block
+    public PS spawnPS;
     @Setter
     public String challengeItemId;
     @Setter
-    public long duration = -100;
-    @Setter
-    public UUID ownerUUID;
+    public List<MythicEntity> toSpawn = new ArrayList<>();
 
-    public transient Location portalBlockLocation;
-    public transient Hologram hologram;
-    public transient Cuboid teleportRegion;
+    public Set<UUID> players = new HashSet<>();
+    public Set<UUID> mobs = new HashSet<>();
+    public long startTime;
+
+    public transient Location spawnLocation;
+    public transient ActivePortal portal;
     public transient ChallengeItem challengeItem;
 
     @Override
-    public ActivePortal load(@NotNull ActivePortal that) {
+    public Session load(@NotNull Session that) {
         super.load(that);
         this.uuid = that.uuid;
-        this.duration = that.duration;
-        this.poralBlockPS = that.poralBlockPS;
-        this.originalBlockMaterial = that.originalBlockMaterial;
+        this.portalUUID = that.portalUUID;
+        this.spawnPS = that.spawnPS;
+        this.players = that.players;
+        this.mobs = that.mobs;
+        this.startTime = that.startTime;
+        this.challengeItemId = that.challengeItemId;
+        this.toSpawn = that.toSpawn;
         return this;
     }
 
-    /**
-     * Initialize the portal, this will create the hologram
-     */
     public void initialize() {
+        this.spawnLocation = spawnPS.asBukkitLocation();
+        this.portal = ActivePortal.get(portalUUID);
         this.challengeItem = ChallengeItem.getChallengeItemById(challengeItemId);
-        this.duration = this.duration == -100 ? challengeItem.getDuration() : this.duration;
-        this.portalBlockLocation = poralBlockPS.asBukkitLocation();
-        this.hologram = BossChallengesPlugin.get().getHolographicDisplays().createHologram(portalBlockLocation.clone().add(0.5, 3.5, 0.5));
-        this.hologram.setPlaceholderSetting(PlaceholderSetting.ENABLE_ALL);
-        this.hologram.getLines().appendItem(new ItemStack(challengeItem.getHologramMaterial()));
-        for (String line : challengeItem.getHologramLines()) {
-            this.hologram.getLines().appendText(Utils.color(line
-                    .replace("%player%", Bukkit.getPlayer(ownerUUID).getName())
-                    .replace("%time%", "{papi: bosschallenges_portal_countdown_" + this.getId() + "}")
-            ));
+    }
+
+    /**
+     * @return if the session has started
+     */
+    public boolean isStarted() {
+        return startTime != 0;
+    }
+
+    /**
+     * Remove a player from the session
+     *
+     * @param uuid The UUID of the player to remove
+     */
+    public void removePlayer(UUID uuid) {
+        players.remove(uuid);
+        this.changed();
+    }
+
+    /**
+     * Add a mob to the session
+     *
+     * @param uuid The UUID of the mob to add
+     */
+    public void addEntity(UUID uuid) {
+        mobs.add(uuid);
+        this.changed();
+    }
+
+    /**
+     * Remove a mob from the session
+     *
+     * @param uuid The UUID of the mob to remove
+     */
+    public void removeEntity(UUID uuid) {
+        mobs.remove(uuid);
+        this.changed();
+    }
+
+    /**
+     * Create a new session for a portal
+     *
+     * @param portal The portal to create a session for
+     */
+    public static void createNewSession(ActivePortal portal) {
+        Session session = SessionColl.get().create(portal.getSessionUUID().toString());
+
+        session.setUuid(portal.getSessionUUID());
+        session.setPortalUUID(portal.getUuid());
+        session.setSpawnPS(PS.valueOf(getNewSchemLocation(new Location(Bukkit.getWorld(MConf.get().getSessionWorldName()), 0, 0, 0))));
+        session.setChallengeItemId(portal.getChallengeItemId());
+        session.setToSpawn(new ArrayList<>(ChallengeItem.getChallengeItemById(portal.getChallengeItemId()).getMythicEntities()));
+
+        session.initialize();
+
+        portal.setSession(session);
+
+        WorldEditIntegration.pasteSchematicAtLocation(session.getSpawnLocation(), portal.getChallengeItem().getSchematicName());
+    }
+
+    public void start() {
+        players.addAll(spawnLocation.getWorld().getNearbyEntities(spawnLocation, 100, 100, 100, entity -> entity instanceof Player).stream().map(entity -> ((Player) entity).getUniqueId()).toList());
+
+        if (players.isEmpty()) {
+            stop();
         }
-        this.teleportRegion = new Cuboid(portalBlockLocation, portalBlockLocation.clone().add(0, challengeItem.getBlocksAbovePortalForHologram(), 0));
+
+        this.startTime = System.currentTimeMillis();
+        this.changed();
     }
 
-    /**
-     * Creates a new active portal at the given location with the given duration.
-     *
-     * @param location the location to create the portal at
-     */
-    public static void createNewActivePortal(Location location, Player owner, String challengeItemId) {
-        UUID uuid = UUID.randomUUID();
-        ActivePortal activePortal = ActivePortalColl.get().create(uuid.toString());
+    public void stop() {
+        players.forEach(playerUUID -> {
+            Player player = Bukkit.getPlayer(playerUUID);
+            if (player != null) {
+                Utils.runCommand("spawn %player%", player);
+                player.playSound(player.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.75f, 1);
+            } else {
+                MData.get().addPlayerToSpawnOnLogin(playerUUID);
+            }
+        });
 
-        activePortal.setUuid(uuid);
-        activePortal.setPoralBlockPS(PS.valueOf(location));
-        activePortal.setOriginalBlockMaterial(location.getBlock().getType());
-        activePortal.setChallengeItemId(challengeItemId);
-        activePortal.setOwnerUUID(owner.getUniqueId());
+        mobs.forEach(entityUUID -> {
+            org.bukkit.entity.Entity entity = Bukkit.getEntity(entityUUID);
+            if (entity != null) {
+                entity.remove();
+            }
+        });
 
-        activePortal.initialize();
+        Utils.runCommand("bc Stopped session " + uuid.toString(), null);
 
-        Utils.runCommands(activePortal.getChallengeItem().getCommandsToRunOnPortalPlace(), owner);
-
-        location.getBlock().setType(MConf.get().getPortalBlockMaterial());
-        location.getWorld().playSound(location, Sound.ENTITY_GENERIC_EXPLODE, 0.5f, 1);
-        location.getWorld().spawnParticle(Particle.EXPLOSION_HUGE, location, 1);
-        location.getWorld().playSound(location, Sound.BLOCK_PORTAL_AMBIENT, SoundCategory.AMBIENT, 1f, 1);
+        if (portal != null) portal.detach();
+        detach();
     }
 
 
     /**
-     * Get the active portal by the location of the portal block
+     * Get a session by the spawn location
      *
-     * @param location the location of the portal block
-     * @return the active portal or null if not found
+     * @param location The location to get the session from
+     * @return The session if found, null otherwise
      */
-    public static ActivePortal getActivePortalByLocation(Location location) {
-        return ActivePortalColl.get().getAll().stream()
-                .filter(activePortal -> activePortal.getPortalBlockLocation().equals(location))
+    public static Session getSessionBySpawnLocation(Location location) {
+        return SessionColl.get().getAll().stream()
+                .filter(session -> location.equals(session.getSpawnLocation()))
                 .findFirst()
                 .orElse(null);
     }
 
     /**
-     * Get the active portal by the location of the player
+     * Get a session by a player
      *
-     * @param location the location of the player
-     * @return the active portal or null if not found
+     * @param player The player to get the session from
+     * @return The session if found, null otherwise
      */
-    public static ActivePortal getActiveCuboidByCuboid(Location location) {
-        return ActivePortalColl.get().getAll().stream()
-                .filter(activePortal -> activePortal.getTeleportRegion().contains(location))
+    public static Session getSessionByPlayer(Player player) {
+        return SessionColl.get().getAll().stream()
+                .filter(session -> session.getPlayers().contains(player.getUniqueId()))
                 .findFirst()
                 .orElse(null);
     }
+
+    /**
+     * Get a new schematic location for a session
+     *
+     * @param originalLocation The original location to get a new location from
+     * @return The new location
+     */
+    public static Location getNewSchemLocation(Location originalLocation) {
+        Location location = originalLocation.clone();
+        if (getSessionBySpawnLocation(location) != null)
+            return getNewSchemLocation(location.add(SESSION_X_AXIS_OFFSET, 0, SESSION_Z_AXIS_OFFSET));
+        return location;
+    }
+
 
 }

@@ -1,13 +1,12 @@
 package com.i0dev.bosschallenges.entity;
 
-import com.massivecraft.massivecore.MassiveCore;
 import com.massivecraft.massivecore.store.Coll;
 
-public class ActivePortalsColl extends Coll<ActivePortals> {
+public class ActivePortalColl extends Coll<ActivePortal> {
 
-    private static ActivePortalsColl i = new ActivePortalsColl();
+    private static final ActivePortalColl i = new ActivePortalColl();
 
-    public static ActivePortalsColl get() {
+    public static ActivePortalColl get() {
         return i;
     }
 
@@ -19,7 +18,5 @@ public class ActivePortalsColl extends Coll<ActivePortals> {
     @Override
     public void setActive(boolean active) {
         super.setActive(active);
-        if (!active) return;
-        ActivePortals.i = this.get(MassiveCore.INSTANCE, true);
     }
 }

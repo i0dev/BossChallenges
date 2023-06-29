@@ -1,13 +1,17 @@
-package com.i0dev.grindtools.entity;
+package com.i0dev.bosschallenges.entity;
 
-import com.i0dev.grindtools.entity.object.*;
+import com.i0dev.bosschallenges.entity.config.ChallengeItem;
+import com.i0dev.bosschallenges.entity.config.ConfigLocationOffset;
+import com.i0dev.bosschallenges.entity.config.MythicEntity;
 import com.massivecraft.massivecore.command.editor.annotation.EditorName;
 import com.massivecraft.massivecore.store.Entity;
 import com.massivecraft.massivecore.util.MUtil;
+import lombok.Getter;
 import org.bukkit.Material;
 
 import java.util.List;
 
+@Getter
 @EditorName("config")
 public class MConf extends Entity<MConf> {
 
@@ -17,73 +21,51 @@ public class MConf extends Entity<MConf> {
         return i;
     }
 
-    public List<String> aliasesGrindTools = MUtil.list("grindtools");
+    public List<String> aliasesGrindTools = MUtil.list("challenges", "bosschallenges");
 
-    public List<FishingCuboid> fishingRegions = MUtil.list();
+    public boolean placingNewPortalsEnabled = true;
+    public List<String> allowedPortalPlacementWorlds = MUtil.list("world", "world_nether", "world_the_end");
+    public Material portalBlockMaterial = Material.END_PORTAL_FRAME;
+    public String sessionWorldName = "boss_sessions";
 
-    public List<LootTable> lootTables = MUtil.list(
-            new LootTable("fishing1", MUtil.list(
-                    new AdvancedItemConfig(
-                            Material.AIR,
-                            "money",
-                            MUtil.list(),
-                            false,
-                            20,
-                            1,
-                            3,
-                            false,
-                            MUtil.list("eco give %player% 100")
+    List<ChallengeItem> challengeItems = MUtil.list(
+            new ChallengeItem(
+                    "leviathan",
+                    "leviathan.schem",
+                    60,
+                    Material.INK_SAC,
+                    3.5,
+                    MUtil.list(
+                            "&bLeviathan Boss Challenge",
+                            "&7Placed by &b%player%",
+                            "&7Closing in &c%time% &7seconds"
                     ),
-                    new AdvancedItemConfig(
-                            Material.DIAMOND,
-                            "&bDiamond",
-                            MUtil.list(),
-                            false,
-                            20,
-                            1,
-                            3,
-                            true,
-                            MUtil.list()
+                    Material.HEART_OF_THE_SEA,
+                    "&bLeviathan Boss Challenge",
+                    MUtil.list(
+                            "",
+                            "&7&oThe Leviathan is a boss challenge",
+                            "&7&othat is a giant squid that is",
+                            "&7&ofound in the ocean. It is a",
+                            "&7&ochallenge that requires a lot of",
+                            "&7&oteamwork and skill to complete.",
+                            "",
+                            "&aClick this item on the ground at spawn to start the challenge."
                     ),
-                    new AdvancedItemConfig(
-                            Material.GOLD_INGOT,
-                            "&6Gold Ingot",
-                            MUtil.list(),
-                            false,
-                            20,
-                            1,
-                            3,
-                            true,
-                            MUtil.list()
-                    )
-            ))
+                    true,
+                    MUtil.list(
+                            new MythicEntity("GIANT", 1, 1, new ConfigLocationOffset(-11, 0, -11)),
+                            new MythicEntity("GIANT", 1, 30, new ConfigLocationOffset(-11, 0, -11))
+                    ),
+                    MUtil.list("broadcast &a&l%player% has opened a Leviathan portal has opened at spawn!"),
+                    MUtil.list("broadcast &a&lThe Leviathan portal has been closed!"),
+                    MUtil.list("broadcast &a&l%player% has entered the Leviathan challenge!")
+            )
     );
-
-    public HoeConfig hoeConfig = new HoeConfig();
-    public SwordConfig swordConfig = new SwordConfig();
-    public PickaxeConfig pickaxeConfig = new PickaxeConfig();
-    public RodConfig rodConfig = new RodConfig();
-
-    public TechChipConfig techChipConfig = new TechChipConfig();
-
-    public UpgradeConfig upgradeConfig = new UpgradeConfig();
-
-    public TierUpgradeConfig tierUpgradeConfig = new TierUpgradeConfig();
-
-
-    public LootTable getLootTable(String id) {
-        for (LootTable lootTable : lootTables) {
-            if (lootTable.getId().equalsIgnoreCase(id)) {
-                return lootTable;
-            }
-        }
-        return null;
-    }
 
 
     @Override
     public MConf load(MConf that) {
-        this.fishingRegions = that.fishingRegions;
         super.load(that);
         return this;
     }

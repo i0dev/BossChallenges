@@ -3,11 +3,11 @@ package com.i0dev.bosschallenges.entity;
 import com.massivecraft.massivecore.MassiveCore;
 import com.massivecraft.massivecore.store.Coll;
 
-public class MLangColl extends Coll<MLang> {
+public class MDataColl extends Coll<MData> {
 
-    private static MLangColl i = new MLangColl();
+    private static MDataColl i = new MDataColl();
 
-    public static MLangColl get() {
+    public static MDataColl get() {
         return i;
     }
 
@@ -20,7 +20,7 @@ public class MLangColl extends Coll<MLang> {
     public void setActive(boolean active) {
         super.setActive(active);
         if (!active) return;
-        MLang.i = this.get(MassiveCore.INSTANCE, true);
+        MData.i = this.get(MassiveCore.INSTANCE, true);
     }
 
 }

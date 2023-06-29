@@ -2,11 +2,11 @@ package com.i0dev.bosschallenges.entity;
 
 import com.massivecraft.massivecore.store.Coll;
 
-public class ActivePortalColl extends Coll<ActivePortal> {
+public class SessionColl extends Coll<Session> {
 
-    private static final ActivePortalColl i = new ActivePortalColl();
+    private static final SessionColl i = new SessionColl();
 
-    public static ActivePortalColl get() {
+    public static SessionColl get() {
         return i;
     }
 

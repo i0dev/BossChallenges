@@ -1,4 +1,4 @@
-package com.i0dev.grindtools;
+package com.i0dev.bosschallenges;
 
 import com.massivecraft.massivecore.Identified;
 import com.massivecraft.massivecore.util.PermissionUtil;
@@ -8,27 +8,15 @@ public enum Perm implements Identified {
 
     BASECOMMAND,
 
-    DEBUG,
-
-    FISHING_REGION,
-    FISHING_REGION_CREATE,
-    FISHING_REGION_REMOVE,
-    FISHING_REGION_LIST,
-    FISHING_REGION_TELEPORT,
     GIVE,
-    GIVE_TOOL,
-    GIVE_TECH_CHIP,
-    GIVE_UPGRADE,
-    GIVE_UPGRADE_ANY,
-    GIVE_UPGRADE_NEXT,
-    UPGRADE,
+    PLACE_PORTAL,
 
     VERSION;
 
     private final String id;
 
     Perm() {
-        this.id = PermissionUtil.createPermissionId(GrindToolsPlugin.get(), this);
+        this.id = PermissionUtil.createPermissionId(BossChallengesPlugin.get(), this);
     }
 
     @Override

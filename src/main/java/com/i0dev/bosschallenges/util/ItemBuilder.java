@@ -1,14 +1,18 @@
-package com.i0dev.grindtools.util;
+package com.i0dev.bosschallenges.util;
 
+import com.i0dev.bosschallenges.BossChallengesPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.material.MaterialData;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -239,6 +243,15 @@ public class ItemBuilder extends ItemStack {
         }
     }
 
+    public ItemBuilder addPDCValue(String key, String value) {
+        ItemMeta im = getItemMeta();
+        PersistentDataContainer pdc = im.getPersistentDataContainer();
+        pdc.set(new NamespacedKey(BossChallengesPlugin.get(), key), PersistentDataType.STRING, value);
+        setItemMeta(im);
+        return this;
+    }
+
+
     public ItemBuilder addEncs(Map<String, Integer> enchantmentIntegerMap) {
         for (String enchantment : enchantmentIntegerMap.keySet()) {
             addUnsafeEnchantment(Enchantment.getByName(enchantment), enchantmentIntegerMap.get(enchantment));
@@ -264,5 +277,13 @@ public class ItemBuilder extends ItemStack {
         setItemMeta(im);
         return this;
     }
+
+    public static String getPDCValue(ItemStack item, String key) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return null;
+        PersistentDataContainer pdc = meta.getPersistentDataContainer();
+        return pdc.get(new NamespacedKey(BossChallengesPlugin.get(), key), PersistentDataType.STRING);
+    }
+
 
 }

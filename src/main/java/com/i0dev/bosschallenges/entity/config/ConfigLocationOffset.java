@@ -1,2 +1,12 @@
-package com.i0dev.bosschallenges.entity.config;public class ConfigLocationOffset {
+package com.i0dev.bosschallenges.entity.config;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
+public class ConfigLocationOffset {
+
+    int x, y, z;
+
 }

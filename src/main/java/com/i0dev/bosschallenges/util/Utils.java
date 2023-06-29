@@ -1,7 +1,9 @@
-package com.i0dev.grindtools.util;
+package com.i0dev.bosschallenges.util;
 
-import com.i0dev.grindtools.entity.MLang;
+import com.i0dev.bosschallenges.entity.MLang;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 
 import java.util.List;
 
@@ -32,5 +34,27 @@ public class Utils {
         }
         return msg;
     }
+
+    /**
+     * Run a list of commands as console
+     *
+     * @param commands list of commands
+     * @param player   player to replace %player% with
+     */
+    public static void runCommands(List<String> commands, Player player) {
+        commands.forEach(command -> runCommand(command, player));
+    }
+
+    /**
+     * Run a command as console
+     *
+     * @param command command to run
+     * @param player  player to replace %player% with
+     */
+    public static void runCommand(String command, Player player) {
+        command = command.replace("%player%", player == null ? "unknown" : player.getName());
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+    }
+
 
 }

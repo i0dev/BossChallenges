@@ -2,21 +2,38 @@ package com.i0dev.bosschallenges.entity;
 
 import com.massivecraft.massivecore.command.editor.annotation.EditorName;
 import com.massivecraft.massivecore.store.Entity;
+import com.massivecraft.massivecore.util.MUtil;
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @EditorName("config")
-public class MLang extends Entity<MLang> {
+public class MData extends Entity<MData> {
 
-    protected static transient MLang i;
+    protected static transient MData i;
 
-    public static MLang get() {
+    public static MData get() {
         return i;
     }
 
-    public String prefix = "&8[&5BossChallenges&8]&7";
+    public Set<UUID> playersToSpawnOnLogin = MUtil.set();
+
+    public void addPlayerToSpawnOnLogin(UUID uuid) {
+        playersToSpawnOnLogin.add(uuid);
+        this.changed();
+    }
+
+    public void removePlayerToSpawnOnLogin(UUID uuid) {
+        playersToSpawnOnLogin.remove(uuid);
+        this.changed();
+    }
 
     @Override
-    public MLang load(MLang that) {
+    public MData load(MData that) {
         super.load(that);
+        this.playersToSpawnOnLogin = that.playersToSpawnOnLogin;
         return this;
     }
 }

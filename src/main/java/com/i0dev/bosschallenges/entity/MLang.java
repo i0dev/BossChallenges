@@ -1,4 +1,4 @@
-package com.i0dev.grindtools.entity;
+package com.i0dev.bosschallenges.entity;
 
 import com.massivecraft.massivecore.command.editor.annotation.EditorName;
 import com.massivecraft.massivecore.store.Entity;
@@ -12,7 +12,7 @@ public class MLang extends Entity<MLang> {
         return i;
     }
 
-    public String prefix = "&8[&6GrindTools&8]&7";
+    public String prefix = "&8[&5BossChallenges&8]&7";
 
     @Override
     public MLang load(MLang that) {

@@ -1,4 +1,4 @@
-package com.i0dev.grindtools.util;
+package com.i0dev.bosschallenges.util;
 
 import org.bukkit.Location;
 import org.bukkit.World;
