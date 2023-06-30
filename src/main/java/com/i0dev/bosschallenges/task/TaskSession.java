@@ -74,7 +74,7 @@ public class TaskSession extends ModuloRepeatTask {
 
             long time = System.currentTimeMillis() - session.getStartTime();
 
-            if (time > session.getChallengeItem().getMaxRunTime()) {
+            if (time > session.getChallengeItem().getMaxRunTime() * 1000) {
                 toRemove.add(session);
                 continue;
             }

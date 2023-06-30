@@ -10,6 +10,8 @@ import com.massivecraft.massivecore.command.type.primitive.TypeInteger;
 import com.massivecraft.massivecore.command.type.sender.TypePlayer;
 import org.bukkit.entity.Player;
 
+import java.util.UUID;
+
 public class CmdBossChallengeGiveChallenge extends BossChallengeCommand {
 
     public CmdBossChallengeGiveChallenge() {
@@ -31,6 +33,7 @@ public class CmdBossChallengeGiveChallenge extends BossChallengeCommand {
                 .lore(challengeItem.getLore())
                 .addGlow(challengeItem.isGlow())
                 .amount(amount)
+                .addPDCValue("prevent-stack", UUID.randomUUID().toString())
                 .addPDCValue("challenge-id", challengeItem.getId());
 
         player.getInventory().addItem(itemBuilder);
