@@ -5,7 +5,7 @@ website: ${project.url}
 authors: [ i01 ]
 depend: [ MassiveCore, DecentHolograms, WorldEdit, PlaceholderAPI, ProtocolLib ]
 description: ${project.description}
-api-version: 1.15
+api-version: 1.20
 permissions:
   bosschallenges.basecommand: { description: bosschallenges basecommand, default: false }
   bosschallenges.version: { description: check version, default: false }
