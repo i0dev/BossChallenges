@@ -4,7 +4,6 @@ import com.i0dev.bosschallenges.Integration.PlaceholderAPI;
 import com.i0dev.bosschallenges.entity.*;
 import com.massivecraft.massivecore.MassivePlugin;
 import com.massivecraft.massivecore.collections.MassiveList;
-import me.filoghost.holographicdisplays.api.HolographicDisplaysAPI;
 import org.bukkit.Bukkit;
 
 import java.io.File;
@@ -54,9 +53,4 @@ public class BossChallengesPlugin extends MassivePlugin {
         ChallengeItemConf.example();
         TimeDecreaseConf.example();
     }
-
-    public HolographicDisplaysAPI getHolographicDisplays() {
-        return HolographicDisplaysAPI.get(this);
-    }
-
 }

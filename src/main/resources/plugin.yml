@@ -3,7 +3,7 @@ version: ${project.version}
 main: com.i0dev.bosschallenges.BossChallengesPlugin
 website: ${project.url}
 authors: [ i01 ]
-depend: [ MassiveCore, HolographicDisplays, WorldEdit, PlaceholderAPI, ProtocolLib ]
+depend: [ MassiveCore, DecentHolograms, WorldEdit, PlaceholderAPI, ProtocolLib ]
 description: ${project.description}
 api-version: 1.15
 permissions:

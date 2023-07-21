@@ -1,15 +1,14 @@
 package com.i0dev.bosschallenges.entity;
 
-import com.i0dev.bosschallenges.BossChallengesPlugin;
 import com.i0dev.bosschallenges.util.Cuboid;
 import com.i0dev.bosschallenges.util.Utils;
 import com.massivecraft.massivecore.ps.PS;
 import com.massivecraft.massivecore.store.Entity;
+import eu.decentsoftware.holograms.api.DHAPI;
+import eu.decentsoftware.holograms.api.holograms.Hologram;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import me.filoghost.holographicdisplays.api.hologram.Hologram;
-import me.filoghost.holographicdisplays.api.hologram.PlaceholderSetting;
 import org.bukkit.*;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
@@ -72,13 +71,13 @@ public class ActivePortal extends Entity<ActivePortal> {
         this.session = Session.get(sessionUUID.toString());
         this.originalBlockData = Bukkit.createBlockData(originalBlockDataString);
         this.portalBlockLocation = poralBlockPS.asBukkitLocation();
-        this.hologram = BossChallengesPlugin.get().getHolographicDisplays().createHologram(portalBlockLocation.clone().add(0.5, 3.5, 0.5));
-        this.hologram.setPlaceholderSetting(PlaceholderSetting.ENABLE_ALL);
-        this.hologram.getLines().appendItem(new ItemStack(challengeItem.getHologramMaterial()));
+        this.hologram = DHAPI.createHologram("portalholoram-" + getId(), portalBlockLocation.clone().add(0.5, 3.5, 0.5), false);
+        // this.hologram.setPlaceholderSetting(PlaceholderSetting.ENABLE_ALL);
+        DHAPI.addHologramLine(this.hologram, new ItemStack(challengeItem.getHologramMaterial()));
         for (String line : challengeItem.getHologramLines()) {
-            this.hologram.getLines().appendText(Utils.color(line
+            DHAPI.addHologramLine(this.hologram, Utils.color(line
                     .replace("%player%", Bukkit.getOfflinePlayer(ownerUUID).getName())
-                    .replace("%time%", "{papi: bosschallenges_portal_countdown_" + this.getId() + "}")
+                    .replace("%time%", "%bosschallenges_portal_countdown_" + this.getId() + "%")
             ));
         }
         this.teleportRegion = new Cuboid(portalBlockLocation, portalBlockLocation.clone().add(0, challengeItem.getBlocksAbovePortalForHologram(), 0));
