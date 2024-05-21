@@ -89,10 +89,9 @@ public class EngineTimeDecrease extends Engine {
     public void onPlayerMove(PlayerMoveEvent e) {
         if (e.getTo() == null) return;
         if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getZ() != e.getTo().getZ() || e.getFrom().getY() != e.getTo().getY()) {
-            ActivePortal activePortal = ActivePortal.getActiveCuboidByCuboid(e.getTo());
+            ActivePortal activePortal = ActivePortal.getActivePortalByCuboid(e.getTo());
             if (activePortal == null) return;
             e.getPlayer().teleport(activePortal.getSession().getSpawnLocation());
-            e.getPlayer().sendMessage("teleported to: " + activePortal.getSession().getSpawnLocation().toString());
             activePortal.getPortalBlockLocation().getWorld().playSound(activePortal.getPortalBlockLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.5f, 1);
             Utils.runCommands(activePortal.getChallengeItem().getCommandsToRunOnEntry(), e.getPlayer());
         }

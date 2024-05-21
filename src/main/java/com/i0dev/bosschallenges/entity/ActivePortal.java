@@ -159,7 +159,7 @@ public class ActivePortal extends Entity<ActivePortal> {
      * @param location the location of the player
      * @return the active portal or null if not found
      */
-    public static ActivePortal getActiveCuboidByCuboid(Location location) {
+    public static ActivePortal getActivePortalByCuboid(Location location) {
         return ActivePortalColl.get().getAll().stream()
                 .filter(activePortal -> activePortal.getTeleportRegion().contains(location))
                 .findFirst()

@@ -1,15 +1,13 @@
 package com.i0dev.bosschallenges.engine;
 
+import com.i0dev.bosschallenges.BossChallengesPlugin;
 import com.i0dev.bosschallenges.Perm;
 import com.i0dev.bosschallenges.entity.ActivePortal;
 import com.i0dev.bosschallenges.entity.MConf;
 import com.i0dev.bosschallenges.util.ItemBuilder;
 import com.i0dev.bosschallenges.util.Utils;
 import com.massivecraft.massivecore.Engine;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.event.EventHandler;
@@ -19,6 +17,11 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.UUID;
 
 public class EnginePortal extends Engine {
 
@@ -86,7 +89,6 @@ public class EnginePortal extends Engine {
         }
 
         ActivePortal.createNewActivePortal(location, e.getPlayer(), challengeId);
-        e.getPlayer().sendMessage("You have placed a portal!");
         itemInHand.setAmount(itemInHand.getAmount() - 1);
         e.getPlayer().updateInventory();
     }
@@ -100,22 +102,6 @@ public class EnginePortal extends Engine {
         if (ActivePortal.getActivePortalByLocation(location) != null) {
             e.setCancelled(true);
             e.getPlayer().sendMessage("There is an active portal here! If it should not be here, please contact an admin.");
-        }
-    }
-
-    /**
-     * Teleports the player to the boss arena if they move into an active portal
-     */
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void onPlayerMove(PlayerMoveEvent e) {
-        if (e.getTo() == null) return;
-        if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getZ() != e.getTo().getZ() || e.getFrom().getY() != e.getTo().getY()) {
-            ActivePortal activePortal = ActivePortal.getActiveCuboidByCuboid(e.getTo());
-            if (activePortal == null) return;
-            e.getPlayer().teleport(activePortal.getSession().getSpawnLocation());
-            e.getPlayer().sendMessage("teleported to: " + activePortal.getSession().getSpawnLocation().toString());
-            activePortal.getPortalBlockLocation().getWorld().playSound(activePortal.getPortalBlockLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 0.5f, 1);
-            Utils.runCommands(activePortal.getChallengeItem().getCommandsToRunOnEntry(), e.getPlayer());
         }
     }
 }

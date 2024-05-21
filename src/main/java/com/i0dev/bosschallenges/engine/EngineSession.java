@@ -9,8 +9,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.persistence.PersistentDataType;
 
 public class EngineSession extends Engine {
@@ -62,8 +64,17 @@ public class EngineSession extends Engine {
                 return;
             }
         }
-
     }
 
+
+    // on player teleprot
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerTeleport(PlayerTeleportEvent e) {
+        if (e.getFrom().getY() < -63.0) {
+            Session session = Session.getSessionByPlayer(e.getPlayer());
+            if (session == null) return;
+            session.removePlayer(e.getPlayer().getUniqueId());
+        }
+    }
 
 }

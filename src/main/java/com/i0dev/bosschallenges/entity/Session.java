@@ -1,5 +1,6 @@
 package com.i0dev.bosschallenges.entity;
 
+import com.i0dev.bosschallenges.BossChallengesPlugin;
 import com.i0dev.bosschallenges.Integration.WorldEditIntegration;
 import com.i0dev.bosschallenges.entity.config.ConfigLocation;
 import com.i0dev.bosschallenges.entity.config.MythicEntity;
@@ -139,6 +140,15 @@ public class Session extends Entity<Session> {
         return new ArrayList<>(spawnLocation.getWorld().getNearbyEntities(spawnLocation, loc.getX(), loc.getY(), loc.getZ(), entity -> entity instanceof Player).stream().map(entity -> (Player) entity).toList());
     }
 
+    public boolean isLocationInArena(Location location) {
+        ConfigLocation loc = challengeItem.getRadiusToCheckForPlayersInArena();
+
+        // Go through each axis and check if the location is within the arena
+        return location.getX() >= spawnLocation.getX() - loc.getX() && location.getX() <= spawnLocation.getX() + loc.getX()
+                && location.getY() >= spawnLocation.getY() - loc.getY() && location.getY() <= spawnLocation.getY() + loc.getY()
+                && location.getZ() >= spawnLocation.getZ() - loc.getZ() && location.getZ() <= spawnLocation.getZ() + loc.getZ();
+    }
+
     /**
      * Starts the session
      */
@@ -224,5 +234,16 @@ public class Session extends Entity<Session> {
         if (getSessionBySpawnLocation(location) != null)
             return getNewSchemLocation(location.add(SESSION_X_AXIS_OFFSET, 0, SESSION_Z_AXIS_OFFSET));
         return location;
+    }
+
+    // Loop over all players in the session and check if they are within the radius of the session, if they are not remove them from the session.
+    public void checkForLeftPlayers() {
+        List<UUID> toRemove = new ArrayList<>();
+        this.getPlayersInArena().stream().map(org.bukkit.entity.Entity::getUniqueId).forEach(uuid -> {
+            if (!this.players.contains(uuid)) {
+                toRemove.add(uuid);
+            }
+        });
+        toRemove.forEach(uuid -> this.players.remove(uuid));
     }
 }

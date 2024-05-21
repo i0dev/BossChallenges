@@ -79,6 +79,9 @@ public class TaskSession extends ModuloRepeatTask {
                 continue;
             }
 
+            // Check if no players are within the session boundaries
+            session.checkForLeftPlayers();
+
             if (session.getPlayers().isEmpty()) {
                 toRemove.add(session);
                 continue;
@@ -101,6 +104,9 @@ public class TaskSession extends ModuloRepeatTask {
                     ConfigLocation locOffset = mythicEntity.getLocationOffset();
                     for (int i = 0; i < mythicEntity.getAmount(); i++) {
                         Entity entity = MythicMobsIntegration.spawnMythicMob(session.getSpawnLocation().clone().add(locOffset.getX(), locOffset.getY(), locOffset.getZ()), mythicEntity.getMythicMobName(), session.getId());
+
+                        if (entity == null) continue;
+
                         session.addEntity(entity.getUniqueId());
                     }
                     toRemoveMythicEntity.add(mythicEntity);
